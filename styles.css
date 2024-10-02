@@ -1,0 +1,192 @@
+body {
+    background-color: black;
+}
+
+.field {
+    background-color: rgb(220,230,235);
+    box-sizing: border-box;
+    width: 800px;
+    height: 800px;
+    margin: auto;
+}
+
+.element {
+    width: 50px;
+    height: 50px;
+    background-color: rgba(160, 94, 212, 0.3);
+    border: 2px solid rgb(160, 94, 212);
+    position: absolute;
+
+}
+
+/* #element2 {
+    border: 1px solid rgb(62,184,171);
+    width: 50px;
+    height: 50px;
+    background-color: rgba(62, 184, 171, 0.3);
+    position: absolute;
+    top: 300px;
+    left: 1200px;
+} */
+
+#element3 {
+    border: 1px solid rgb(62,184,171);
+    width: 50px;
+    height: 50px;
+    background-color: rgba(62, 184, 171, 0.3);
+    position: absolute;
+    top: 300px;
+    left: 1200px;
+}
+
+.element-green {
+    border: 2px solid rgb(62,184,171);
+    width: 50px;
+    height: 50px;
+    
+    box-sizing: border-box;
+    background-color: rgba(62, 184, 171, 0.3);
+    position: absolute;
+    
+}
+
+.element-orange {
+    border: 2px solid rgb(242, 200, 167);
+    background-color: rgba(242, 200, 167, 0.3);
+    width: 50px;
+    height: 50px;
+    box-sizing: border-box;
+    position: absolute;
+}
+
+.element-purple {
+    width: 50px;
+    height: 50px;
+    background-color: rgba(160, 94, 212, 0.3);
+    border: 2px solid rgb(160, 94, 212);
+
+    box-sizing: border-box;
+    position: absolute;
+    left:700px;
+    top:700px;
+
+}
+
+/* h1 {
+    text-align: center;
+    color: white;
+} */
+
+
+
+.buttons-window {
+    background-color: white;
+    position: absolute;
+    box-sizing: border-box;
+    left: 1400px;
+    text-align: center;
+    
+}
+
+/* .text {
+    
+    margin: auto;
+    box-sizing: border-box;
+} */
+
+.buttons {
+    
+    box-sizing: border-box;
+    padding: 10px;
+}
+
+.buttons button {
+    height: 50px;
+    width: 50px;
+    border-radius: 50%;
+}
+
+.purple {
+    border: 2px solid rgb(160, 94, 212);
+    background-color: rgba(160, 94, 212, 0.3);
+}
+
+.green {
+    border: 2px solid rgb(62,184,171);
+    background-color: rgba(62, 184, 171, 0.3);
+}
+
+.orange {
+    border: 2px solid rgb(242, 200, 167);
+    background-color: rgba(242, 200, 167, 0.3);
+}
+
+
+
+/* .group {
+    padding: 5px;
+} */
+
+/* .group button {
+    height: 30px;
+    
+} */
+
+/* .group p {
+    margin: auto;
+    
+} */
+
+/* .element1 {
+    border: 1px solid rgb(160, 94, 212);
+    width: 50px;
+    height: 50px;
+    background-color: rgba(160, 94, 212, 0.3);
+    position: absolute;
+    top: 500px;
+    left: 900px;
+} */
+
+/* .element1:hover {
+    cursor: pointer;
+} */
+
+/* .element2 {
+    border: 1px solid rgb(62,184,171);
+    width: 50px;
+    height: 50px;
+    background-color: rgba(62, 184, 171, 0.3);
+    position: absolute;
+    top: 300px;
+    left: 1200px;
+} */
+
+/* .element {
+    border: 1px solid red;
+    width: 50px;
+    height: 50px;
+    background-color: black;
+    position: absolute;
+    top: 500px;
+    left: 900px;
+} */
+
+/* #element1 {
+    border: 1px solid rgb(160, 94, 212);
+    width: 50px;
+    height: 50px;
+    background-color: rgba(160, 94, 212, 0.3);
+    position: absolute;
+    top: 500px;
+    left: 900px;
+} */
+
+/* #element2 {
+    border: 1px solid rgb(62,184,171);
+    width: 50px;
+    height: 50px;
+    background-color: rgba(62, 184, 171, 0.3);
+    position: absolute;
+    top: 300px;
+    left: 1200px;
+} */
