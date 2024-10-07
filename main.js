@@ -12,8 +12,6 @@ elements[0].style.height = `${elements[0].size}px`
 elements[0].style.zIndex = `500`
 elements[0].style.backgroundColor = `black`
 elements[0].style.borderColor = `red`
-elements[0].style.left = `0px`
-elements[0].style.top = `0px`
 
 elements[1].size = 100
 elements[1].style.width = `${elements[1].size}px`
@@ -21,8 +19,7 @@ elements[1].style.height = `${elements[1].size}px`
 elements[1].style.zIndex = `500`   
 elements[1].style.backgroundColor = `red`
 elements[1].style.borderColor = `blue`
-elements[1].style.left = `500px`
-elements[1].style.top = `100px`
+elements[1].style.transform = `translate(500px, 100px)`
 
 let maxSize = Math.max(elements[0].size, elements[1].size)
 
@@ -31,12 +28,7 @@ let movedElement = null
 let connectedElement = null
 let mouseMoveHelper = null
 
-let dx
-let dy
-let dxm
-let dym
-let size1
-let size2
+let newX, newY, dx, dy, dxm, dym, size1, size2
 
 elements.forEach(element => {
     element.addEventListener('mousedown', event => mouseDown(event, element)) 
@@ -63,8 +55,7 @@ function mouseDown(event, element) {
     document.addEventListener('mouseup', mouseUp)
 }
 
-function mouseMove(dxm, dym, event, movedElement, otherElement, size) {
-    
+function mouseMove(dxm, dym, event, movedElement, otherElement) {
     fieldCoords = getCoords(field)
     let mouseX = event.clientX 
     let mouseY = event.clientY
@@ -74,45 +65,28 @@ function mouseMove(dxm, dym, event, movedElement, otherElement, size) {
     let otherElementCoords = getCoords(otherElement)
     dx = movedElementCoords.x - otherElementCoords.x
     dy = movedElementCoords.y - otherElementCoords.y
-    // x = Math.max(fieldCoords.x, Math.min(x, fieldCoords.r - movedElement.size))
-    // y = Math.max(fieldCoords.y, Math.min(y, fieldCoords.b - movedElement.size))
-
     let newX = Math.max(fieldCoords.x, Math.min(x, fieldCoords.r - movedElement.size))
     let newY = Math.max(fieldCoords.y, Math.min(y, fieldCoords.b - movedElement.size))
-    
-    
-    
-    
-    // if (
-    //     connectedX < fieldCoords.x || 
-    //     connectedX > fieldCoords.r - otherElement.size ||
-    //     connectedY < fieldCoords.y || 
-    //     connectedY > fieldCoords.b - otherElement.size
-    // ) {
-    //     return; // Если соединенный элемент выходит за границы, прекращаем движение
-    // }
-
+    let distance = getDistance(movedElement, otherElement)
+    console.log(distance)
 
 
 
     if (isOverlapping(movedElement, otherElement) == true) {
         let connectedX = newX - dx;
         let connectedY = newY - dy;
-
         if (connectedX < fieldCoords.x || connectedX + otherElement.size > fieldCoords.r) {
-            newX = movedElementCoords.x; // Останавливаем по X
+            newX = movedElementCoords.x;
         }
         if (connectedY < fieldCoords.y || connectedY + otherElement.size > fieldCoords.b) {
-            newY = movedElementCoords.y; // Останавливаем по Y
+            newY = movedElementCoords.y;
         }
-
         moveConnected(newX, newY, dx, dy, movedElement, otherElement)
         elements.forEach(element => {
             element.style.borderStyle = `dashed`
         })
     }
-    movedElement.style.left = `${newX - fieldCoords.x}px` 
-    movedElement.style.top = `${newY - fieldCoords.y}px`
+    movedElement.style.transform = `translate(${newX - fieldCoords.x}px, ${newY - fieldCoords.y}px)`
 }
 
 function mouseUp() {
@@ -139,19 +113,11 @@ function getCoords(element) {
 function moveConnected(newX, newY, dx, dy, movedElement, otherElement) {
     let connectedX = newX - dx
     let connectedY = newY - dy
-
     let otherElementSize = otherElement.size
     connectedX = Math.max(fieldCoords.x, Math.min(connectedX, fieldCoords.r - otherElementSize))
     connectedY = Math.max(fieldCoords.y, Math.min(connectedY, fieldCoords.b - otherElementSize))
-
-    
-    
-    movedElement.style.left = `${newX - fieldCoords.x}px`
-    movedElement.style.top = `${newY - fieldCoords.y}px`
-    otherElement.style.left = `${connectedX - fieldCoords.x}px`
-    otherElement.style.top = `${connectedY - fieldCoords.y}px`
-    
-    
+    movedElement.style.transform = `translate(${newX - fieldCoords.x}px, ${newY - fieldCoords.y}px)`
+    otherElement.style.transform = `translate(${connectedX - fieldCoords.x}px, ${connectedY - fieldCoords.y}px)`
 }
 
 function isOverlapping(element1, element2) {
@@ -162,4 +128,33 @@ function isOverlapping(element1, element2) {
              rect1.left > rect2.right || 
              rect1.bottom < rect2.top || 
              rect1.top > rect2.bottom);
+}
+
+function getDistance (element1, element2) {
+    var cords1 = getCoords(element1)
+    var cords2 = getCoords(element2)
+    return Math.sqrt((cords1.x - cords2.x) ** 2 + (cords1.y - cords2.y) ** 2)
+}
+
+greenBtn.onclick = function () {
+  if (selectedElement) {
+    selectedElement.className = 'element-green';
+  }  
+  
+}
+
+purpleBtn.onclick = function () {  
+  if (selectedElement) {
+    selectedElement.className = 'element-purple';
+  }
+}
+
+orangeBtn.onclick = function () {  
+  if (selectedElement) {
+    selectedElement.className = 'element-orange';
+  };
+}
+
+greenBtn.onclick = function () {  
+  selectedElement.style = 'background-color: rgba(62, 184, 171, 0.3)';
 }
