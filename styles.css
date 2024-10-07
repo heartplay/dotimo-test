@@ -41,7 +41,6 @@ color: white;
   left: 850px;
   box-sizing: border-box;
   border-radius: 5px;
-
 }
 
 .buttons-window button:hover {
@@ -57,7 +56,6 @@ color: white;
   box-sizing: border-box;
   padding: 5px;
   margin-bottom: 5px;
-
 }
 
 #disconnect {
