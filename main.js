@@ -1,158 +1,118 @@
 const field = document.getElementById('field')
 const elements = document.querySelectorAll('.element')
-const elementSize = 50
+const fieldSize = 800
+
+field.style.width = `${fieldSize}px`
+field.style.height = `${fieldSize}px`
+let fieldCoords = getCoords(field)
+
+elements[0].size = 50
+elements[0].style.width = `${elements[0].size}px`
+elements[0].style.height = `${elements[0].size}px`
+elements[0].style.zIndex = `500`
+elements[0].style.backgroundColor = `black`
+elements[0].style.borderColor = `red`
+elements[0].style.left = `0px`
+elements[0].style.top = `0px`
+
+elements[1].size = 100
+elements[1].style.width = `${elements[1].size}px`
+elements[1].style.height = `${elements[1].size}px`
+elements[1].style.zIndex = `500`   
+elements[1].style.backgroundColor = `red`
+elements[1].style.borderColor = `blue`
+elements[1].style.left = `500px`
+elements[1].style.top = `100px`
+
+let maxSize = Math.max(elements[0].size, elements[1].size)
+
+let otherElement = null
+let movedElement = null
+let connectedElement = null
+let mouseMoveHelper = null
 
 let dx
 let dy
-
-
-
-let movedElement = null
-let selectedElement = null
-let mouseMoveHelper = null
-let otherElement = null
-let connectedElement = null
-
-elements[1].style.left = `600px`
-elements[0].style.borderColor = `red`
-elements[1].style.borderColor = `blue`
-
-elements.forEach(element => {
-    element.style.width = `${elementSize}px`
-    element.style.height = `${elementSize}px`
-    element.style.zIndex = `500`   // zIndex используется только при наличии контекста наложения(элемент - корневой, элемент имеет position: absolute или relative, opacity < 1)
-    element.style.backgroundColor = `black`
-})
-
-let distanceConnection = Math.sqrt(elementSize ** 2 + elementSize ** 2)
-console.log(distanceConnection)
-
-
-// function getCoords(elem) {
-//     var coords = elem.getBoundingClientRect()
-//     return {
-//         x: coords.left,
-//         y: coords.top,
-//         r: coords.right,
-//         b: coords.bottom
-//     }
-// }
-// let coords = getCoords(elem)
-//     dx = mouseX - coords.x
-//     dy = mouseY - coords.y
-
-
-
-let distance = distanceBetween(elements[0], elements[1])
-// console.log('расстояние между элементами', distance)
-if (distance <= distanceConnection) {
-    console.log('connected')
-} else {
-    console.log('disconnected')
-}
-
-
-
-
-
-// console.log(`zindex 1 elem  ${elements[0].zIndex}, zindex 2 elem ${elements[1].zIndex}`)
-
-document.addEventListener('mousedown', (event) => {
-    const target = event.target.getAttribute("id");
-    if (target == "field" && selectedElement) {
-        selectedElement.style.borderStyle = `solid`
-        selectedElement = null
-        console.log('target', target, ' selectedElement',selectedElement)
-    }
-})
+let dxm
+let dym
+let size1
+let size2
 
 elements.forEach(element => {
     element.addEventListener('mousedown', event => mouseDown(event, element)) 
 })
 
-function mouseDown(e, elem) {
-    if (e.which !== 1) return
-    if (selectedElement) {
-        selectedElement.style.zIndex = `500`
-        selectedElement.style.borderStyle = 'solid'
-        selectedElement = null
+function mouseDown(event, element) {
+    if (event.which !== 1) return
+    element.ondragstart = function() {
+        return false
     }
-    selectedElement = elem
-    selectedElement.style.zIndex = `1000`
-    selectedElement.style.borderStyle = `dashed`
-    
-    // console.log('elements ',elements)
-    // console.log('selectedElement ', selectedElement)
-    
-    movedElement = elem
+    movedElement = element
+    let mouseX = event.clientX
+    let mouseY = event.clientY
+    let coords = getCoords(element)
+    const dxm = mouseX - coords.x
+    const dym = mouseY - coords.y
     elements.forEach(element => {
         if (element !== movedElement) {
             otherElement = element
         }
     })
-    // console.log('неподвижный элемент', otherElement)
-    // console.log('выбранный ', selectedElement)
-    // console.log('передвигаемый ', movedElement)
-
-    movedElement.ondragstart = function() {
-        return false;
-      };
-    
-    var mouseX = e.clientX
-    var mouseY = e.clientY
-    let coords = getCoords(elem)
-    dx = mouseX - coords.x
-    dy = mouseY - coords.y
-    mouseMoveHelper = event => mouseMove(event, movedElement)
+    mouseMoveHelper = event => mouseMove(dxm, dym, event, movedElement, otherElement, element.size)
     document.addEventListener('mousemove', mouseMoveHelper)
     document.addEventListener('mouseup', mouseUp)
-
-    // console.log('кнопка зажата, выбранный ', selectedElement)
-    // console.log('кнопка зажата, передвигаемый', movedElement)
 }
 
-function mouseMove(event, movedElement) {
-    elements.forEach(element => {
-        if (element !== movedElement) {
-            otherElement = element
+function mouseMove(dxm, dym, event, movedElement, otherElement, size) {
+    
+    fieldCoords = getCoords(field)
+    let mouseX = event.clientX 
+    let mouseY = event.clientY
+    let x = mouseX - dxm
+    let y = mouseY - dym
+    let movedElementCoords = getCoords(movedElement)
+    let otherElementCoords = getCoords(otherElement)
+    dx = movedElementCoords.x - otherElementCoords.x
+    dy = movedElementCoords.y - otherElementCoords.y
+    // x = Math.max(fieldCoords.x, Math.min(x, fieldCoords.r - movedElement.size))
+    // y = Math.max(fieldCoords.y, Math.min(y, fieldCoords.b - movedElement.size))
+
+    let newX = Math.max(fieldCoords.x, Math.min(x, fieldCoords.r - movedElement.size))
+    let newY = Math.max(fieldCoords.y, Math.min(y, fieldCoords.b - movedElement.size))
+    
+    
+    
+    
+    // if (
+    //     connectedX < fieldCoords.x || 
+    //     connectedX > fieldCoords.r - otherElement.size ||
+    //     connectedY < fieldCoords.y || 
+    //     connectedY > fieldCoords.b - otherElement.size
+    // ) {
+    //     return; // Если соединенный элемент выходит за границы, прекращаем движение
+    // }
+
+
+
+
+    if (isOverlapping(movedElement, otherElement) == true) {
+        let connectedX = newX - dx;
+        let connectedY = newY - dy;
+
+        if (connectedX < fieldCoords.x || connectedX + otherElement.size > fieldCoords.r) {
+            newX = movedElementCoords.x; // Останавливаем по X
         }
-    })
+        if (connectedY < fieldCoords.y || connectedY + otherElement.size > fieldCoords.b) {
+            newY = movedElementCoords.y; // Останавливаем по Y
+        }
 
-    // console.log('неподвижный элемент при mouseMove', otherElement)
-    var mouseX = event.clientX 
-    var mouseY = event.clientY
-    let fieldCoords = getCoords(field)
-    let x = mouseX - dx
-    let y = mouseY - dy
-    if (x <= fieldCoords.x) {
-        x = fieldCoords.x
+        moveConnected(newX, newY, dx, dy, movedElement, otherElement)
+        elements.forEach(element => {
+            element.style.borderStyle = `dashed`
+        })
     }
-    if (x + elementSize >= fieldCoords.r) {
-        x = fieldCoords.r - elementSize
-    }
-    if (y <= fieldCoords.y) {
-        y = fieldCoords.y
-    }
-    if (y + elementSize >= fieldCoords.b - 1) {
-        y = fieldCoords.b - elementSize
-    } 
-    movedElement.style.left = `${x - fieldCoords.x}px`
-    movedElement.style.top = `${y - fieldCoords.y}px`
-
-    let distance = distanceBetween(movedElement, otherElement)
-    console.log('расстояние между элементами', distance)
-    if (distance <= distanceConnection) {
-    console.log('connected')
-    connectedElement = otherElement
-    console.log(connectedElement)
-    } else {
-    console.log('disconnected')
-    connectedElement = null
-    console.log(connectedElement)
-    }
-
-    // console.log('движение, выбранный ', selectedElement)
-    // console.log('движение, передвигаемый', movedElement)
+    movedElement.style.left = `${newX - fieldCoords.x}px` 
+    movedElement.style.top = `${newY - fieldCoords.y}px`
 }
 
 function mouseUp() {
@@ -164,13 +124,10 @@ function mouseUp() {
         movedElement = null
     }
     document.removeEventListener('mouseup', mouseUp)
-    
-    // console.log('кнопка отпущена, выбранный ', selectedElement)
-    // console.log('кнопка отпущена, передвигаемый', movedElement)
 }
 
-function getCoords(elem) {
-    var coords = elem.getBoundingClientRect()
+function getCoords(element) {
+    var coords = element.getBoundingClientRect()
     return {
         x: coords.left,
         y: coords.top,
@@ -179,13 +136,30 @@ function getCoords(elem) {
     }
 }
 
-function distanceBetween(elem1, elem2) {
-    var coords1 = getCoords(elem1)
-    var coords2 = getCoords(elem2)
-    return Math.sqrt((coords1.x - coords2.x) ** 2 + (coords1.y - coords2.y) ** 2)
+function moveConnected(newX, newY, dx, dy, movedElement, otherElement) {
+    let connectedX = newX - dx
+    let connectedY = newY - dy
+
+    let otherElementSize = otherElement.size
+    connectedX = Math.max(fieldCoords.x, Math.min(connectedX, fieldCoords.r - otherElementSize))
+    connectedY = Math.max(fieldCoords.y, Math.min(connectedY, fieldCoords.b - otherElementSize))
+
+    
+    
+    movedElement.style.left = `${newX - fieldCoords.x}px`
+    movedElement.style.top = `${newY - fieldCoords.y}px`
+    otherElement.style.left = `${connectedX - fieldCoords.x}px`
+    otherElement.style.top = `${connectedY - fieldCoords.y}px`
+    
+    
 }
 
-// function moveConnectedElement(movedElement, connectedElement) {
-
-
-// }
+function isOverlapping(element1, element2) {
+    const rect1 = element1.getBoundingClientRect();
+    const rect2 = element2.getBoundingClientRect();
+    
+    return !(rect1.right < rect2.left || 
+             rect1.left > rect2.right || 
+             rect1.bottom < rect2.top || 
+             rect1.top > rect2.bottom);
+}
