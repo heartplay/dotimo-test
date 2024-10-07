@@ -70,8 +70,6 @@ function mouseMove(dxm, dym, event, movedElement, otherElement) {
     let distance = getDistance(movedElement, otherElement)
     console.log(distance)
 
-
-
     if (isOverlapping(movedElement, otherElement) == true) {
         let connectedX = newX - dx;
         let connectedY = newY - dy;
@@ -136,25 +134,23 @@ function getDistance (element1, element2) {
     return Math.sqrt((cords1.x - cords2.x) ** 2 + (cords1.y - cords2.y) ** 2)
 }
 
+purpleBtn.onclick = function () {
+    if (selectedElement) {
+        selectedElement.style.backgroundColor = 'rgba(120,24,196,0.3)';
+        selectedElement.style.borderColor = `rgb(120,24,196)`;
+    };
+}
+
 greenBtn.onclick = function () {
-  if (selectedElement) {
-    selectedElement.className = 'element-green';
-  }  
-  
+    if (selectedElement) {
+        selectedElement.style.backgroundColor = 'rgba(107,202,191,0.3)';
+        selectedElement.style.borderColor = `rgb(107,202,191)`;
+    };
 }
 
-purpleBtn.onclick = function () {  
-  if (selectedElement) {
-    selectedElement.className = 'element-purple';
-  }
-}
-
-orangeBtn.onclick = function () {  
-  if (selectedElement) {
-    selectedElement.className = 'element-orange';
-  };
-}
-
-greenBtn.onclick = function () {  
-  selectedElement.style = 'background-color: rgba(62, 184, 171, 0.3)';
+orangeBtn.onclick = function () {
+    if (selectedElement) {
+        selectedElement.style.backgroundColor = 'rgba(244,202,172,0.3)';
+        selectedElement.style.borderColor = `rgb(244,202,172)`;
+    };
 }
