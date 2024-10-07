@@ -23,7 +23,7 @@ margin-top: 20px;
 
 .element {
 box-sizing: border-box;
-border: 1px solid; 
+border: 2px solid; 
 position: absolute;
 margin: 0;
 opacity: 0.98;
