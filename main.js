@@ -5,6 +5,7 @@ const greenBtn = document.getElementById('green')
 const orangeBtn = document.getElementById('orange')
 const disconnectBtn = document.getElementById('disconnect')
 const fieldSize = 800
+const connectDistance = 85
 
 elements[0].size = 50
 elements[0].style.width = `${elements[0].size}px`
