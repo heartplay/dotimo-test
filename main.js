@@ -104,15 +104,19 @@ function mouseMove(dxm, dym, event, movedElement, otherElement) {
     let otherElementCoords = getCoords(otherElement)
     dx = movedElementCoords.x - otherElementCoords.x
     dy = movedElementCoords.y - otherElementCoords.y
-    console.log('moved',movedElementCoords)
-    console.log('other',otherElementCoords)
+    // console.log('moved',movedElementCoords)
+    // console.log('other',otherElementCoords)
 
 
 
-    let dxx = movedElementCoords.x - otherElementCoords.x
+    
+    let dxr = movedElementCoords.x - otherElementCoords.r
     let drx = movedElementCoords.r - otherElementCoords.x
-    let dyy = movedElementCoords.y - otherElementCoords.y
+    let dxx = movedElementCoords.x - otherElementCoords.x
+    let dyb = movedElementCoords.y - otherElementCoords.b
     let dby = movedElementCoords.b - otherElementCoords.y
+    let dyy = movedElementCoords.y - otherElementCoords.y
+
 
     // let dxx = otherElementCoords.x - movedElementCoords.x
     // let drx = otherElementCoords.r - movedElementCoords.x
@@ -120,11 +124,11 @@ function mouseMove(dxm, dym, event, movedElement, otherElement) {
     // let dby = otherElementCoords.b - movedElementCoords.y
     // console.log('dxx ', dxx, 'drx ', drx)
     // console.log('dyy ', dyy, 'dby ', dby)
-    let dx1 = Math.min(Math.abs(dxx), Math.abs(drx), Math.abs(dxx), Math.abs(drx))
-    let dy1 = Math.min(Math.abs(dyy), Math.abs(dby))
-    console.log('dx1',dx1,'dy1',dy1)
+    let dx1 = Math.min(Math.abs(dxr), Math.abs(drx), Math.abs(dxx))
+    let dy1 = Math.min(Math.abs(dby), Math.abs(dyb), Math.abs(dyy))
+    // console.log('dx1',dx1,'dy1',dy1)
     // console.log('dyy',dyy,'dby',dby,'dy1',dy1)
-
+    console.log('dx1',dx1, 'dy1',dy1)
 
     let r = Math.sqrt(dx1 * dx1 + dy1 * dy1)
     
@@ -137,11 +141,13 @@ function mouseMove(dxm, dym, event, movedElement, otherElement) {
     // Сделать новое условие для соединения и способ соединения
 
 
-    let distance = getDistance(movedElement, otherElement)
+    // let distance = getDistance(movedElement, otherElement)
     // console.log(distance)
+    
     if (dx1 <= connectDistance && dy1 <= connectDistance) {
-        // console.log('connected dx1, dy1', dx1, dy1,'distance',distance)
+        console.log('connected dx1, dy1', dx1, dy1)
         isConnected = true
+
         // return
         // console.log('connected')
         // const pos1 = getCoords(movedElement)
