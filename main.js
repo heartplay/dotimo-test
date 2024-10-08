@@ -5,7 +5,7 @@ const greenBtn = document.getElementById('green')
 const orangeBtn = document.getElementById('orange')
 const disconnectBtn = document.getElementById('disconnect')
 const fieldSize = 800
-const connectDistance = 85
+const connectDistance = 40
 
 elements[0].size = 50
 elements[0].style.width = `${elements[0].size}px`
@@ -97,33 +97,82 @@ function mouseMove(dxm, dym, event, movedElement, otherElement) {
     let mouseY = event.clientY
     let x = mouseX - dxm
     let y = mouseY - dym
+    
+    
+    
     let movedElementCoords = getCoords(movedElement)
     let otherElementCoords = getCoords(otherElement)
     dx = movedElementCoords.x - otherElementCoords.x
     dy = movedElementCoords.y - otherElementCoords.y
+    console.log('moved',movedElementCoords)
+    console.log('other',otherElementCoords)
+
+
+
+    let dxx = movedElementCoords.x - otherElementCoords.x
+    let drx = movedElementCoords.r - otherElementCoords.x
+    let dyy = movedElementCoords.y - otherElementCoords.y
+    let dby = movedElementCoords.b - otherElementCoords.y
+
+    // let dxx = otherElementCoords.x - movedElementCoords.x
+    // let drx = otherElementCoords.r - movedElementCoords.x
+    // let dyy = otherElementCoords.y - movedElementCoords.y
+    // let dby = otherElementCoords.b - movedElementCoords.y
+    // console.log('dxx ', dxx, 'drx ', drx)
+    // console.log('dyy ', dyy, 'dby ', dby)
+    let dx1 = Math.min(Math.abs(dxx), Math.abs(drx), Math.abs(dxx), Math.abs(drx))
+    let dy1 = Math.min(Math.abs(dyy), Math.abs(dby))
+    console.log('dx1',dx1,'dy1',dy1)
+    // console.log('dyy',dyy,'dby',dby,'dy1',dy1)
+
+
+    let r = Math.sqrt(dx1 * dx1 + dy1 * dy1)
+    
+    
+    
+
+
+
+    
+    // Сделать новое условие для соединения и способ соединения
+
+
+    let distance = getDistance(movedElement, otherElement)
+    // console.log(distance)
+    if (dx1 <= connectDistance && dy1 <= connectDistance) {
+        // console.log('connected dx1, dy1', dx1, dy1,'distance',distance)
+        isConnected = true
+        // return
+        // console.log('connected')
+        // const pos1 = getCoords(movedElement)
+        // otherElement.style.transform = `translate(${pos1.x + movedElement.size - fieldCoords.x}px, ${pos1.y + movedElement.size - fieldCoords.y}px)`
+        
+
+        // otherElement.style.transform = `translate(${otherElementCoords.x - distance - fieldCoords.x}px, ${otherElementCoords.x - distance - fieldCoords.y}px)`
+        
+    }
+    
+    // if (isOverlapping(movedElement, otherElement) == true) {
+    //     isConnected = true
+    //     disconnectBtn.style.visibility = `visible`
+    //     let connectedX = newX - dx;
+    //     let connectedY = newY - dy;
+    //     if (connectedX < fieldCoords.x || connectedX + otherElement.size > fieldCoords.r) {
+    //         newX = movedElementCoords.x;
+    //     }
+    //     if (connectedY < fieldCoords.y || connectedY + otherElement.size > fieldCoords.b) {
+    //         newY = movedElementCoords.y;
+    //     }
+    //     moveConnected(newX, newY, dx, dy, movedElement, otherElement)
+    //     elements.forEach(element => {
+    //         element.style.borderStyle = `dashed`
+    //     })
+    // } else {
+    //     movedElement.style.transform = `translate(${newX - fieldCoords.x}px, ${newY - fieldCoords.y}px)`
+    // }   
     let newX = Math.max(fieldCoords.x, Math.min(x, fieldCoords.r - movedElement.size))
     let newY = Math.max(fieldCoords.y, Math.min(y, fieldCoords.b - movedElement.size))
-    // Сделать новое условие для соединения и способ соединения
-    let distance = getDistance(movedElement, otherElement)
-    
-    if (isOverlapping(movedElement, otherElement) == true) {
-        isConnected = true
-        disconnectBtn.style.visibility = `visible`
-        let connectedX = newX - dx;
-        let connectedY = newY - dy;
-        if (connectedX < fieldCoords.x || connectedX + otherElement.size > fieldCoords.r) {
-            newX = movedElementCoords.x;
-        }
-        if (connectedY < fieldCoords.y || connectedY + otherElement.size > fieldCoords.b) {
-            newY = movedElementCoords.y;
-        }
-        moveConnected(newX, newY, dx, dy, movedElement, otherElement)
-        elements.forEach(element => {
-            element.style.borderStyle = `dashed`
-        })
-    } else {
-        movedElement.style.transform = `translate(${newX - fieldCoords.x}px, ${newY - fieldCoords.y}px)`
-    }   
+    movedElement.style.transform = `translate(${newX - fieldCoords.x}px, ${newY - fieldCoords.y}px)`
 }
 
 function mouseUp() {
