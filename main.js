@@ -86,14 +86,17 @@ function drawAll() {
         elements.forEach(element => {
             if (element == currentElement) {
                 return
-            }
-            let distance = getDistanceBetween(currentElement, element) + parseInt(ctx.lineWidth)
-            console.log(distance)
-            if (distance <= connectDistance && isOverlapping(currentElement, element) !== true) {
+            } else {
+                let distance = getDistanceBetween(currentElement, element) + parseInt(ctx.lineWidth)
+                console.log(distance)
+                if (distance <= connectDistance && isOverlapping(currentElement, element) !== true) {
                     element.x = lerp(element.x, currentElement.x, 0.1)
                     element.y = lerp(element.y, currentElement.y, 0.1)
 
             }
+
+            }
+            
     
             // if (isOverlapping(currentElement, element)) {
             //     console.log('коннект')
@@ -118,7 +121,7 @@ function isOverlapping(element1, element2) {
     return !(element1.x + element1.size < element2.x || 
              element1.x > element2.x + element2.size || 
              element1.y + element1.size < element2.y || 
-             element1.y > element2.x + element2.size)
+             element1.y > element2.y + element2.size)
 }
 
 function lerp(start, end, t) {
