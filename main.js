@@ -1,139 +1,162 @@
+const canvas = document.getElementById('canvas')
+const ctx = canvas.getContext('2d')
 const field = document.getElementById('field')
-const elements = document.querySelectorAll('.element')
 const purpleBtn = document.getElementById('purple')
 const greenBtn = document.getElementById('green')
 const orangeBtn = document.getElementById('orange')
-const disconnectBtn = document.getElementById('disconnect')
-const fieldSize = 800
 
-elements[0].size = 50
-elements[0].style.width = `${elements[0].size}px`
-elements[0].style.height = `${elements[0].size}px`
-elements[0].style.zIndex = `500`
-elements[0].style.backgroundColor = `rgba(120,24,196,0.3)`
-elements[0].style.borderColor = `rgb(120,24,196)`
-elements[0].style.transform = `translate(250px, 300px)`
+canvas.width = 800
+canvas.height = 800
+ctx.lineWidth = `2`
 
-elements[1].size = 100
-elements[1].style.width = `${elements[1].size}px`
-elements[1].style.height = `${elements[1].size}px`
-elements[1].style.zIndex = `500`   
-elements[1].style.backgroundColor = `rgba(107,202,191,0.3)`
-elements[1].style.borderColor = `rgb(107,202,191)`
-elements[1].style.transform = `translate(500px, 400px)`
+let currentElement, mouseX, mouseY, offsetX, offsetY, newX, newY
+let isDragging = false
+let fieldCords = getCoords(field)
 
-field.style.width = `${fieldSize}px`
-field.style.height = `${fieldSize}px`
+let elements = [
+    createElement(200, 200, 50, `rgb(120,24,196)`, 'rgba(120,24,196,0.3)'),
+    createElement(400, 200, 50, 'rgb(107,202,191)', 'rgba(107,202,191,0.3)')
+]
 
-let fieldCoords = getCoords(field)
-let selectedElement = null
-let otherElement = null
-let movedElement = null
-let connectedElement = null
-let mouseMoveHelper = null
-let isConnected = false
-let newX, newY, dx, dy, dxm, dym, size1, size2
+const connectDistance = elements[0].size + elements[1].size + parseInt(ctx.lineWidth) + 10
+console.log(connectDistance)
 
-elements.forEach(element => {
-    element.addEventListener('mousedown', event => mouseDown(event, element)) 
-})
-
-document.addEventListener('mousedown', (event) => {
-    if (event.target == field) {
-        selectedElement = null
-        movedElement = null
-        otherElement = null
-        isConnected = false
-        elements.forEach(element => {
-            element.style.borderStyle = `solid`
-        })
+function createElement(x, y, size, borderColor, color) {
+    return {
+        x: x,
+        y: y,
+        size: size,
+        borderColor: borderColor,
+        color: color,
+        connectedElements: []
     }
-})
-
-function mouseDown(event, element) {
-    if (event.which !== 1) return
-    element.ondragstart = function() {
-        return false
-    }
-    if (selectedElement) {
-        selectedElement.style.borderStyle = `solid`
-        selectedElement = null
-    }
-    selectedElement = element
-    elements.forEach(element => {
-        if (element !== selectedElement) {
-            otherElement = element
-        }
-    })
-    if (isOverlapping(selectedElement,otherElement) == true) {
-        selectedElement.style.borderStyle = `dashed`
-        otherElement.style.borderStyle = `dashed`
-        isConnected = true
-        selectedElement = null
-    } else {
-        selectedElement.style.borderStyle = `dashed`
-        isConnected = false
-    }
-    movedElement = element
-    let mouseX = event.clientX
-    let mouseY = event.clientY
-    let coords = getCoords(element)
-    const dxm = mouseX - coords.x
-    const dym = mouseY - coords.y
-    elements.forEach(element => {
-        if (element !== movedElement) {
-            otherElement = element
-        }
-    })
-    mouseMoveHelper = event => mouseMove(dxm, dym, event, movedElement, otherElement, element.size)
-    document.addEventListener('mousemove', mouseMoveHelper)
-    document.addEventListener('mouseup', mouseUp)
 }
 
-function mouseMove(dxm, dym, event, movedElement, otherElement) {
-    fieldCoords = getCoords(field)
-    let mouseX = event.clientX 
-    let mouseY = event.clientY
-    let x = mouseX - dxm
-    let y = mouseY - dym
-    let movedElementCoords = getCoords(movedElement)
-    let otherElementCoords = getCoords(otherElement)
-    dx = movedElementCoords.x - otherElementCoords.x
-    dy = movedElementCoords.y - otherElementCoords.y
-    let newX = Math.max(fieldCoords.x, Math.min(x, fieldCoords.r - movedElement.size))
-    let newY = Math.max(fieldCoords.y, Math.min(y, fieldCoords.b - movedElement.size))
-    // Сделать новое условие для соединения и способ соединения
-    let distance = getDistance(movedElement, otherElement)
+canvas.addEventListener('mousedown', (event) => {
+    let startX = event.clientX - fieldCords.x
+    let startY = event.clientY - fieldCords.y
+    currentElement = elements.find(element => isMouseOnElement(startX, startY, element) == true)
     
-    if (isOverlapping(movedElement, otherElement) == true) {
-        isConnected = true
-        disconnectBtn.style.visibility = `visible`
-        let connectedX = newX - dx;
-        let connectedY = newY - dy;
-        if (connectedX < fieldCoords.x || connectedX + otherElement.size > fieldCoords.r) {
-            newX = movedElementCoords.x;
-        }
-        if (connectedY < fieldCoords.y || connectedY + otherElement.size > fieldCoords.b) {
-            newY = movedElementCoords.y;
-        }
-        moveConnected(newX, newY, dx, dy, movedElement, otherElement)
-        elements.forEach(element => {
-            element.style.borderStyle = `dashed`
-        })
+    if (currentElement) {
+        isDragging = true
+        offsetX = startX - currentElement.x
+        offsetY = startY - currentElement.y
+        newX = currentElement.x
+        newY = currentElement.y
     } else {
-        movedElement.style.transform = `translate(${newX - fieldCoords.x}px, ${newY - fieldCoords.y}px)`
-    }   
+        isDragging = false
+    }
+})
+
+document.addEventListener('mousemove', (event) => {
+    if (!isDragging) {
+        return 
+    } else {
+        mouseX = event.clientX - fieldCords.x
+        mouseY = event.clientY - fieldCords.y
+        newX = Math.max(0, Math.min(mouseX - offsetX, canvas.width - currentElement.size))
+        newY = Math.max(0, Math.min(mouseY - offsetY, canvas.height - currentElement.size))
+        
+    }
+})
+
+document.addEventListener('mouseup', (event) => {
+    if (!isDragging) {
+        return
+    }
+    isDragging = false
+})
+
+drawAll()
+
+
+
+function drawAll() {
+    clear()
+    elementPosition()
+    connectElements()
+    drawElements()
+    window.requestAnimationFrame(drawAll)
 }
 
-function mouseUp() {
-    if (mouseMoveHelper) {
-        document.removeEventListener('mousemove', mouseMoveHelper);
-        mouseMoveHelper = null
+ function connectElements() {
+        if (!currentElement) {
+            return
+        }
+        elements.forEach(element => {
+            if (element == currentElement) {
+                return
+            }
+            let distance = getDistanceBetween(currentElement, element) + parseInt(ctx.lineWidth)
+            console.log(distance)
+            if (distance <= connectDistance && isOverlapping(currentElement, element) !== true) {
+                    element.x = lerp(element.x, currentElement.x, 0.1)
+                    element.y = lerp(element.y, currentElement.y, 0.1)
+
+            }
+    
+            // if (isOverlapping(currentElement, element)) {
+            //     console.log('коннект')
+                
+            // }
+            
+    
+    
+    
+        })
     }
-    if (movedElement) {
-        movedElement = null
+
+function elementPosition () {
+    if (currentElement && isDragging) {
+        currentElement.x = lerp(currentElement.x, newX, 0.1)
+        currentElement.y = lerp(currentElement.y, newY, 0.1)
     }
-    document.removeEventListener('mouseup', mouseUp)
+}
+
+
+function isOverlapping(element1, element2) {
+    return !(element1.x + element1.size < element2.x || 
+             element1.x > element2.x + element2.size || 
+             element1.y + element1.size < element2.y || 
+             element1.y > element2.x + element2.size)
+}
+
+function lerp(start, end, t) {
+    return start * (1 - t) + end * t;
+}
+
+
+function drawElements() {
+    elements.forEach(element => {
+        ctx.beginPath()
+        ctx.strokeStyle = element.borderColor
+        ctx.fillStyle = element.color
+        if (element == currentElement) {
+            ctx.setLineDash([15, 5])
+        } else {
+            ctx.setLineDash([])
+        }
+        ctx.rect(element.x, element.y, element.size, element.size)
+        ctx.fill()
+        ctx.stroke()
+        ctx.strokeStyle = null
+        ctx.fillStyle = null
+    })
+}
+
+function clear() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height)
+}
+
+function isMouseOnElement(x, y, element) {
+    let elementX = element.x
+    let elementR = element.x + element.size
+    let elementY = element.y
+    let elementB = element.y + element.size
+    if (x > elementX && x < elementR && y > elementY && y < elementB) {
+        return true
+    }
+    return false
 }
 
 function getCoords(element) {
@@ -146,80 +169,65 @@ function getCoords(element) {
     }
 }
 
-function moveConnected(newX, newY, dx, dy, movedElement, otherElement) {
-    let connectedX = newX - dx
-    let connectedY = newY - dy
-    let otherElementSize = otherElement.size
-    connectedX = Math.max(fieldCoords.x, Math.min(connectedX, fieldCoords.r - otherElementSize))
-    connectedY = Math.max(fieldCoords.y, Math.min(connectedY, fieldCoords.b - otherElementSize))
-    movedElement.style.transform = `translate(${newX - fieldCoords.x}px, ${newY - fieldCoords.y}px)`
-    otherElement.style.transform = `translate(${connectedX - fieldCoords.x}px, ${connectedY - fieldCoords.y}px)`
+function getCenterCoords(element) {
+    return {
+        centerX: element.x + element.size / 2,
+        centerY: element.y + element.size / 2
+    }
 }
 
-function isOverlapping(element1, element2) {
-    const rect1 = element1.getBoundingClientRect();
-    const rect2 = element2.getBoundingClientRect();
-    
-    return !(rect1.right < rect2.left || 
-             rect1.left > rect2.right || 
-             rect1.bottom < rect2.top || 
-             rect1.top > rect2.bottom);
-}
-
-function getDistance (element1, element2) {
-    var cords1 = getCoords(element1)
-    var cords2 = getCoords(element2)
-
-    return Math.sqrt((cords1.x - cords2.x) ** 2 + (cords1.y - cords2.y) ** 2)
+function getDistanceBetween(element1, element2) {
+    let centerCords1 = getCenterCoords(element1)
+    let centerCords2 = getCenterCoords(element2)
+    return Math.hypot(centerCords1.centerX - centerCords2.centerX, centerCords1.centerY - centerCords2.centerY)
 }
 
 purpleBtn.onclick = function () {
-    if (isConnected == true) {
-        elements.forEach(element => {
-            element.style.backgroundColor = 'rgba(120,24,196,0.3)'
-            element.style.borderColor = `rgb(120,24,196)`
-        })
-    } else if (selectedElement) {
-        selectedElement.style.backgroundColor = 'rgba(120,24,196,0.3)'
-        selectedElement.style.borderColor = `rgb(120,24,196)`
-    } else {
-        alert('Элементы не выбраны!')
+    if (currentElement == null) {
+        alert('Элемент не выбран!')
+        return
     }
+    elements.forEach(element => {
+        if (element !== currentElement) {
+            return
+        } else {
+            element.borderColor = `rgb(120,24,196)`
+            element.color = 'rgba(120,24,196,0.3)'
+        }
+        drawElements()
+    })
 }
 
 greenBtn.onclick = function () {
-    if (isConnected == true) {
-        elements.forEach(element => {
-            element.style.backgroundColor = 'rgba(107,202,191,0.3)'
-            element.style.borderColor = `rgb(107,202,191)`
-        })
-    } else if (selectedElement) {
-        selectedElement.style.backgroundColor = 'rgba(107,202,191,0.3)'
-        selectedElement.style.borderColor = `rgb(107,202,191)`
-    } else {
-        alert('Элементы не выбраны!')
+    if (currentElement == null) {
+        alert('Элемент не выбран!')
+        return
     }
+    elements.forEach(element => {
+        if (element !== currentElement) {
+            return
+        } else {
+            element.borderColor = `rgb(107,202,191)`
+            element.color = 'rgba(107,202,191,0.3)'
+        }
+        drawElements()
+    })
 }
 
 orangeBtn.onclick = function () {
-    if (isConnected == true) {
-        elements.forEach(element => {
-            element.style.backgroundColor = 'rgba(244,202,172,0.3)'
-            element.style.borderColor = `rgb(244,202,172)`
-        })
-    } else if (selectedElement) {
-        selectedElement.style.backgroundColor = 'rgba(244,202,172,0.3)'
-        selectedElement.style.borderColor = `rgb(244,202,172)`
-    } else {
-        alert('Элементы не выбраны!')
+    if (currentElement == null) {
+        alert('Элемент не выбран!')
+        return
     }
+    elements.forEach(element => {
+        if (element !== currentElement) {
+            return
+        } else {
+            element.borderColor = `rgb(244,202,172)`
+            element.color = 'rgba(244,202,172,0.3)'
+        }
+        drawElements()
+    })
 }
-
-disconnectBtn.onclick = function () {
-    alert('Пока не готово')
-    // Сделать разъединение
-}
-
-
 
 
