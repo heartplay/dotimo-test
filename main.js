@@ -19,7 +19,6 @@ let elements = [
 ]
 
 const connectDistance = elements[0].size + elements[1].size + parseInt(ctx.lineWidth) + 10
-console.log(connectDistance)
 
 function createElement(x, y, size, borderColor, color) {
     return {
@@ -53,9 +52,9 @@ document.addEventListener('mousemove', (event) => {
         return 
     } 
     mouseX = event.clientX - fieldCords.x
-        mouseY = event.clientY - fieldCords.y
-        newX = Math.max(0, Math.min(mouseX - offsetX, canvas.width - currentElement.size))
-        newY = Math.max(0, Math.min(mouseY - offsetY, canvas.height - currentElement.size))
+    mouseY = event.clientY - fieldCords.y
+    newX = Math.max(0, Math.min(mouseX - offsetX, canvas.width - currentElement.size))
+    newY = Math.max(0, Math.min(mouseY - offsetY, canvas.height - currentElement.size))
 })
 
 document.addEventListener('mouseup', (event) => {
@@ -66,8 +65,6 @@ document.addEventListener('mouseup', (event) => {
 })
 
 drawAll()
-
-
 
 function drawAll() {
     clear()
@@ -117,7 +114,6 @@ function isOverlapping(element1, element2) {
 function lerp(start, end, t) {
     return start * (1 - t) + end * t;
 }
-
 
 function drawElements() {
     elements.forEach(element => {
@@ -201,7 +197,6 @@ greenBtn.onclick = function () {
 orangeBtn.onclick = function () {
     changeColor(`rgb(244,202,172)`, 'rgba(244,202,172,0.3)')
 }
-
 
 
 
