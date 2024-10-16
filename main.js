@@ -4,6 +4,7 @@ const field = document.getElementById('field')
 const purpleBtn = document.getElementById('purple')
 const greenBtn = document.getElementById('green')
 const orangeBtn = document.getElementById('orange')
+const disconnectBtn = document.getElementById('disconnect')
 
 canvas.width = 800
 canvas.height = 800
@@ -85,8 +86,8 @@ function connectElements() {
             } else {
                 let distance = getDistanceBetween(currentElement, element) + parseInt(ctx.lineWidth)
                 if (distance <= connectDistance && isOverlapping(currentElement, element) !== true) {
-                    element.x = lerp(element.x, currentElement.x, 0.1)
-                    element.y = lerp(element.y, currentElement.y, 0.1)
+                    element.x = lerp(element.x, currentElement.x, 0.05)
+                    element.y = lerp(element.y, currentElement.y, 0.05)
                 }
             }
             if (isOverlapping(currentElement, element) == true) {
@@ -97,6 +98,7 @@ function connectElements() {
                     }
                     dx = currentElement.x - element.x
                     dy = currentElement.y - element.y
+                    disconnectBtn.style.visibility = `visible`
                 })
             }
         })
@@ -213,5 +215,9 @@ orangeBtn.onclick = function () {
     changeColor(`rgb(244,202,172)`, 'rgba(244,202,172,0.3)')
 }
 
+disconnectBtn.onclick = function () {
+    alert('Пока не готово')
+    // Сделать разъединение
+}
 
 
