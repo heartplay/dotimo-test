@@ -9,7 +9,7 @@ canvas.width = 800
 canvas.height = 800
 ctx.lineWidth = `2`
 
-let currentElement, mouseX, mouseY, offsetX, offsetY, newX, newY
+let currentElement, mouseX, mouseY, offsetX, offsetY, newX, newY, dx, dy
 let isDragging = false
 let fieldCords = getCoords(field)
 
@@ -35,6 +35,7 @@ canvas.addEventListener('mousedown', (event) => {
     let startX = event.clientX - fieldCords.x
     let startY = event.clientY - fieldCords.y
     currentElement = elements.find(element => isMouseOnElement(startX, startY, element) == true)
+    
     
     if (currentElement) {
         isDragging = true
@@ -79,28 +80,43 @@ function connectElements() {
             return
         }
         elements.forEach(element => {
-            if (element == currentElement) {
+            if (element == currentElement || currentElement.connectedElements.find(el => el = element)) {
                 return
             } else {
                 let distance = getDistanceBetween(currentElement, element) + parseInt(ctx.lineWidth)
-                console.log(distance)
                 if (distance <= connectDistance && isOverlapping(currentElement, element) !== true) {
-                    element.x = lerp(element.x, currentElement.x, 0.05)
-                    element.y = lerp(element.y, currentElement.y, 0.05)
+                    element.x = lerp(element.x, currentElement.x, 0.1)
+                    element.y = lerp(element.y, currentElement.y, 0.1)
                 }
             }
-            
-            // if (isOverlapping(currentElement, element)) {
-            //     console.log('коннект')
-                
-            // }
+            if (isOverlapping(currentElement, element) == true) {
+                currentElement.connectedElements.push(element)
+                currentElement.connectedElements.forEach(element =>{
+                    if (currentElement == element) {
+                        return
+                    }
+                    dx = currentElement.x - element.x
+                    dy = currentElement.y - element.y
+                })
+            }
         })
 }
 
 function updateElementsPosition() {
     if (currentElement && isDragging) {
+        // currentElement.x = lerp(currentElement.x, newX, 0.1)
+        // currentElement.y = lerp(currentElement.y, newY, 0.1)
         currentElement.x = newX
         currentElement.y = newY
+        currentElement.connectedElements.forEach(element => {
+            if (currentElement == element) {
+                return
+            }
+            element.x = newX - dx
+            element.y = newY - dy
+            // element.x = lerp(element.x, newX - dx, 0.1)
+            // element.y = lerp(element.y, newY - dy, 0.1)
+        })
     }
 }
 
@@ -182,7 +198,6 @@ function changeColor(borderColor, color) {
         }
         element.borderColor = borderColor
         element.color = color
-        drawElements()
     })
 }
 
