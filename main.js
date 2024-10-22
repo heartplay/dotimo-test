@@ -12,12 +12,13 @@ ctx.lineWidth = 1
 
 let currentElement, otherElement
 let offsetX, offsetY
-let newX, newY
+let newX, newY, newConX, newConY
 let dx, dy
 let isConnected = false
 let isConnecting = false
 let isDragging = false
 let fieldCords = getCoords(field)
+
 
 let elements = [
     createElement(200, 200, 50, 'rgb(120,24,196)', 'rgba(120,24,196,0.3)'),
@@ -87,31 +88,40 @@ function drawAll() {
     if (currentElement && !isIntersecting(currentElement, otherElement)) {
         connectElements()
     }
-    // if (!isConnected) {
-    //     connectElements()
-    // }
+    if (!isConnected) {
+        updateElementVelocities(); // Обновляем положение квадратов на основе скорости
+    }
     drawElements()
     window.requestAnimationFrame(drawAll)
 }
 
 function updateElementsPosition() {
-    if (!currentElement) {
-        return
-    }
-    newX = Math.max(0, Math.min(newX, canvas.width - currentElement.size))
-    newY = Math.max(0, Math.min(newY, canvas.height - currentElement.size))
+    if (!currentElement) return;
+    newX = Math.max(currentElement.size / 2, Math.min(newX, canvas.width - currentElement.size / 2));
+    newY = Math.max(currentElement.size / 2, Math.min(newY, canvas.height - currentElement.size / 2));
     if (isIntersecting(currentElement, otherElement)) {
-        isConnected = true
-        disconnectBtn.style.visibility = `visible`
+        isConnected = true;
+        disconnectBtn.style.visibility = `visible`;
+        dx = currentElement.x - otherElement.x;
+        dy = currentElement.y - otherElement.y;
+        newConX = newX - dx;
+        newConY = newY - dy;
+        newConX = Math.max(otherElement.size / 2, Math.min(newConX, canvas.width - otherElement.size / 2));
+        newConY = Math.max(otherElement.size / 2, Math.min(newConY, canvas.height - otherElement.size / 2));
+        if (newConX <= otherElement.size / 2 || newConX >= canvas.width - otherElement.size / 2) {
+            newX = currentElement.x
+        }
+        if (newConY <= otherElement.size / 2 || newConY >= canvas.height - otherElement.size / 2) {
+            newY = currentElement.y
+        }
+        currentElement.x = newX;
+        currentElement.y = newY;
+        otherElement.x = newX - dx;
+        otherElement.y = newY - dy;
+    } else {
+        currentElement.x = newX;
+        currentElement.y = newY;
     }
-    if (isConnected) {
-        dx = currentElement.x - otherElement.x
-        dy = currentElement.y - otherElement.y
-        otherElement.x = newX - dx
-        otherElement.y = newY - dy
-    }
-    currentElement.x = newX
-    currentElement.y = newY
 }
 
 function connectElements() {
@@ -127,13 +137,6 @@ function connectElements() {
     let speed = Math.pow(connectionDistance / distance, 2)
     if (distance <= connectionDistance && !isIntersecting(currentElement, otherElement)) {
         isConnecting = true
-        // let leftToRight = (currentElement.x - currentElement.size / 2 - ctx.lineWidth) - (otherElement.x + otherElement.size / 2 + ctx.lineWidth)
-        // let rightToLeft = (currentElement.x + currentElement.size / 2 + ctx.lineWidth) - (otherElement.x - otherElement.size / 2 - ctx.lineWidth)
-        // let topToBottmom = (currentElement.y - currentElement.size / 2 - ctx.lineWidth) - (otherElement.y + otherElement.size / 2 + ctx.lineWidth)
-        // let bottomToTop = (currentElement.y + currentElement.size / 2 + ctx.lineWidth) - (otherElement.y - otherElement.size / 2 - ctx.lineWidth)
-        // console.log(leftToRight, rightToLeft, topToBottmom, bottomToTop)
-        // let a = Math.abs(leftToRight) < Math.abs(rightToLeft) ? leftToRight : rightToLeft
-        // let b = Math.abs(topToBottmom) < Math.abs(bottomToTop) ? topToBottmom : bottomToTop
         let dx = currentElement.x - otherElement.x
         let dy = currentElement.y - otherElement.y
         if (Math.abs(dx) > Math.abs(dy)) {
@@ -261,4 +264,8 @@ orangeBtn.onclick = function () {
 disconnectBtn.onclick = function () {
     alert('Пока не готово')
 }
+
+
+
+
 
