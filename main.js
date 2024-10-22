@@ -21,7 +21,7 @@ let fieldCords = getCoords(field)
 
 let elements = [
     createElement(200, 200, 50, 'rgb(120,24,196)', 'rgba(120,24,196,0.3)'),
-    createElement(400, 200, 100, 'rgb(42,176,163)', 'rgba(42,176,163,0.3)')
+    createElement(400, 200, 70, 'rgb(42,176,163)', 'rgba(42,176,163,0.3)')
 ]
 
 function createElement(x, y, size, borderColor, color) {
@@ -46,7 +46,6 @@ canvas.addEventListener('mousedown', (event) => {
         }
         otherElement = elem
     })
-
     if (currentElement) {
         isDragging = true
         offsetX = startX - currentElement.x
@@ -67,7 +66,6 @@ document.addEventListener('mousemove', (event) => {
     // }
     let mouseX = event.clientX - fieldCords.x
     let mouseY = event.clientY - fieldCords.y
-    
     newX = mouseX - offsetX
     newY = mouseY - offsetY
 })
@@ -86,8 +84,9 @@ function drawAll() {
     if (isDragging) {
         updateElementsPosition()
     }
-    if (currentElement && !isIntersecting(currentElement, otherElement))
-    connectElements()
+    if (currentElement && !isIntersecting(currentElement, otherElement)) {
+        connectElements()
+    }
     // if (!isConnected) {
     //     connectElements()
     // }
@@ -101,6 +100,10 @@ function updateElementsPosition() {
     }
     newX = Math.max(0, Math.min(newX, canvas.width - currentElement.size))
     newY = Math.max(0, Math.min(newY, canvas.height - currentElement.size))
+    if (isIntersecting(currentElement, otherElement)) {
+        isConnected = true
+        disconnectBtn.style.visibility = `visible`
+    }
     if (isConnected) {
         dx = currentElement.x - otherElement.x
         dy = currentElement.y - otherElement.y
@@ -111,90 +114,66 @@ function updateElementsPosition() {
     currentElement.y = newY
 }
 
-// function connectElements() {
-//     if (!currentElement || !otherElement) {
-//         return
-//     }
-//     if (isIntersecting(currentElement, otherElement)) {
-//         isConnecting = false
-//         isConnected = true
-//         disconnectBtn.style.visibility = `visible`
-//         return
-//     }
-//     let distance = getDistanceBetween(currentElement, otherElement)
-//     let connectionDistance = currentElement.size + otherElement.size + ctx.lineWidth + 10
-//     if (distance <= connectionDistance && !isIntersecting(currentElement, otherElement)) {
-//         isConnecting = true
-//         isDragging = false
-//         otherElement.x = lerp(otherElement.x, currentElement.x, 0.08)
-//         otherElement.y = lerp(otherElement.y, currentElement.y, 0.08)
-//     }
-// }
-
 function connectElements() {
     if (!currentElement || isConnected) {
         return
     }
-    let distance = getDistanceBetween(currentElement, otherElement)
-    let connectionDistance = currentElement.size + otherElement.size + ctx.lineWidth
     if (isIntersecting(currentElement, otherElement)) {
         isConnecting = false
-        isConnected = true
-        disconnectBtn.style.visibility = `visible`
         return
     }
+    let distance = getDistanceBetween(currentElement, otherElement)
+    let connectionDistance = currentElement.size + otherElement.size + ctx.lineWidth
+    let speed = Math.pow(connectionDistance / distance, 2)
     if (distance <= connectionDistance && !isIntersecting(currentElement, otherElement)) {
         isConnecting = true
-        // isDragging = false
-        otherElement.x = lerp(otherElement.x, currentElement.x, 0.01)
-        otherElement.y = lerp(otherElement.y, currentElement.y, 0.01)
-        if (isIntersecting(currentElement, otherElement)) {
-            isConnecting = false
-            isConnected = true
-            disconnectBtn.style.visibility = `visible`
-            return
+        // let leftToRight = (currentElement.x - currentElement.size / 2 - ctx.lineWidth) - (otherElement.x + otherElement.size / 2 + ctx.lineWidth)
+        // let rightToLeft = (currentElement.x + currentElement.size / 2 + ctx.lineWidth) - (otherElement.x - otherElement.size / 2 - ctx.lineWidth)
+        // let topToBottmom = (currentElement.y - currentElement.size / 2 - ctx.lineWidth) - (otherElement.y + otherElement.size / 2 + ctx.lineWidth)
+        // let bottomToTop = (currentElement.y + currentElement.size / 2 + ctx.lineWidth) - (otherElement.y - otherElement.size / 2 - ctx.lineWidth)
+        // console.log(leftToRight, rightToLeft, topToBottmom, bottomToTop)
+        // let a = Math.abs(leftToRight) < Math.abs(rightToLeft) ? leftToRight : rightToLeft
+        // let b = Math.abs(topToBottmom) < Math.abs(bottomToTop) ? topToBottmom : bottomToTop
+        let dx = currentElement.x - otherElement.x
+        let dy = currentElement.y - otherElement.y
+        if (Math.abs(dx) > Math.abs(dy)) {
+            otherElement.x += dx / distance * speed
+        } else if ((Math.abs(dy) > Math.abs(dx))) {
+            otherElement.y += dy / distance * speed
         }
+            
+        
+
+        // if (dx < dy) {
+
+        // }
+
+        // console.log('a',a,'b',b)
+
+        // if (Math.abs(a) > Math.abs(b) && Math.abs(currentElement.y - otherElement.y) < currentElement.size) {
+        //     let c = a 
+        //     otherElement.x += c / distance * speed
+        // } 
+        // else if (Math.abs(a) < Math.abs(b) && Math.abs(currentElement.x - otherElement.x) < currentElement.size) {
+        //     let c = b
+        //     otherElement.y += c / distance * speed
+        // }
+        // else {
+        //     otherElement.x += a / distance * speed
+        //     otherElement.y += b / distance * speed
+        // }
+        isConnecting = true
+        // otherElement.x -= (otherElement.x - currentElement.x) / distance * speed
+        // otherElement.y -= (otherElement.y - currentElement.y) / distance * speed
     }
 }
 
-// function connectElements() {
-//     if (!currentElement || isConnected) {
-//         return
-//     }
-//     let distance = getDistanceBetween(currentElement, otherElement)
-//     let connectionDistance = currentElement.size + otherElement.size + ctx.lineWidth
-//     let speed = Math.pow(connectionDistance / distance, 2)
-//     if (isIntersecting(currentElement, otherElement)) {
-//         isConnecting = false
-//         isConnected = true
-//         disconnectBtn.style.visibility = `visible`
-//         return
-//     } else if (distance <= connectionDistance) {
-//         isConnecting = true
-//         otherElement.x -= (otherElement.x - currentElement.x) / distance * speed
-//         otherElement.y -= (otherElement.y - currentElement.y) / distance * speed
-//     }
-//     // if (distance <= connectionDistance && !isIntersecting(currentElement, otherElement)) {
-//     //     isConnecting = true
-//     //     otherElement.x -= (otherElement.x - currentElement.x) / distance * speed
-//     //     otherElement.y -= (otherElement.y - currentElement.y) / distance * speed
-//     //     if (isIntersecting(currentElement, otherElement)) {
-//     //         isConnecting = false
-//     //         isConnected = true
-//     //         disconnectBtn.style.visibility = `visible`
-//     //         return
-//     //     }
-//     // }
-// }
-
 function isIntersecting(element1, element2) {
-    return !(element1.x + ctx.lineWidth + element1.size < element2.x - ctx.lineWidth || 
-             element1.x - ctx.lineWidth > element2.x + element2.size + ctx.lineWidth || 
-             element1.y + ctx.lineWidth + element1.size < element2.y - ctx.lineWidth || 
-             element1.y - ctx.lineWidth > element2.y + element2.size + ctx.lineWidth )
+    return !(element1.x + ctx.lineWidth + element1.size / 2 < element2.x - ctx.lineWidth - element2.size / 2 || 
+             element1.x - ctx.lineWidth - element1.size / 2 > element2.x + ctx.lineWidth + element2.size / 2 || 
+             element1.y + ctx.lineWidth + element1.size / 2 < element2.y - ctx.lineWidth - element2.size / 2 || 
+             element1.y - ctx.lineWidth - element1.size / 2 > element2.y + ctx.lineWidth + element2.size / 2 )
 }
-
-
 
 function lerp(start, end, t) {
     return start * (1 - t) + end * t;
@@ -212,7 +191,7 @@ function drawElements() {
         } else {
             ctx.setLineDash([])
         }
-        ctx.rect(element.x, element.y, element.size, element.size)
+        ctx.rect(element.x - element.size / 2, element.y - element.size / 2, element.size, element.size)
         ctx.fill()
         ctx.stroke()
         ctx.strokeStyle = null
@@ -225,7 +204,7 @@ function clear() {
 }
 
 function isMouseOnElement(x, y, element) {
-    if (x > element.x && x < element.x + element.size && y > element.y && y < element.y + element.size) {
+    if (x > element.x - element.size / 2 && x < element.x + element.size / 2 && y > element.y - element.size / 2 && y < element.y + element.size / 2) {
         return true
     } else {
         return false
@@ -242,17 +221,8 @@ function getCoords(element) {
     }
 }
 
-function getCenterCoords(element) {
-    return {
-        centerX: element.x + element.size / 2,
-        centerY: element.y + element.size / 2
-    }
-}
-
 function getDistanceBetween(element1, element2) {
-    let centerCords1 = getCenterCoords(element1)
-    let centerCords2 = getCenterCoords(element2)
-    return Math.hypot(centerCords1.centerX - centerCords2.centerX, centerCords1.centerY - centerCords2.centerY)
+    return Math.hypot(element1.x - element2.x, element1.y - element2.y)
 }
 
 function changeColor(borderColor, color) {
@@ -290,6 +260,5 @@ orangeBtn.onclick = function () {
 
 disconnectBtn.onclick = function () {
     alert('Пока не готово')
-    // Сделать разъединение
 }
 
