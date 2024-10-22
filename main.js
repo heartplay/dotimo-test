@@ -88,9 +88,6 @@ function drawAll() {
     if (currentElement && !isIntersecting(currentElement, otherElement)) {
         connectElements()
     }
-    if (!isConnected) {
-        updateElementVelocities(); // Обновляем положение квадратов на основе скорости
-    }
     drawElements()
     window.requestAnimationFrame(drawAll)
 }
