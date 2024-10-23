@@ -176,8 +176,8 @@ function disconnect() {
     // })
     if (Math.abs(currentElement.x - randX1) < 1 && Math.abs(currentElement.y - randY1) < 1 &&
         Math.abs(otherElement.x - randX2) < 1 && Math.abs(otherElement.y - randY2) < 1) {
-        isDisconnect = false;
-        isConnected = false  // Анимация завершена
+        isDisconnect = false
+        isConnected = false
         disconnectBtn.style.visibility = `hidden`
     }
 
