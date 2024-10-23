@@ -18,7 +18,8 @@ let isConnected = false
 let isConnecting = false
 let isDragging = false
 let fieldCords = getCoords(field)
-
+let isDisconnect = false
+let randX1, randY1, randX2, randY2
 
 let elements = [
     createElement(200, 200, 50, 'rgb(120,24,196)', 'rgba(120,24,196,0.3)'),
@@ -85,8 +86,11 @@ function drawAll() {
     if (isDragging) {
         updateElementsPosition()
     }
-    if (currentElement && !isIntersecting(currentElement, otherElement)) {
+    if (currentElement && !isIntersecting(currentElement, otherElement) && !isDisconnect) {
         connectElements()
+    }
+    if (isDisconnect) {
+        disconnect()
     }
     drawElements()
     window.requestAnimationFrame(drawAll)
@@ -141,31 +145,44 @@ function connectElements() {
         } else if ((Math.abs(dy) > Math.abs(dx))) {
             otherElement.y += dy / distance * speed
         }
-            
-        
-
-        // if (dx < dy) {
-
-        // }
-
-        // console.log('a',a,'b',b)
-
-        // if (Math.abs(a) > Math.abs(b) && Math.abs(currentElement.y - otherElement.y) < currentElement.size) {
-        //     let c = a 
-        //     otherElement.x += c / distance * speed
-        // } 
-        // else if (Math.abs(a) < Math.abs(b) && Math.abs(currentElement.x - otherElement.x) < currentElement.size) {
-        //     let c = b
-        //     otherElement.y += c / distance * speed
-        // }
-        // else {
-        //     otherElement.x += a / distance * speed
-        //     otherElement.y += b / distance * speed
-        // }
-        isConnecting = true
-        // otherElement.x -= (otherElement.x - currentElement.x) / distance * speed
-        // otherElement.y -= (otherElement.y - currentElement.y) / distance * speed
+        // isConnecting = true
     }
+
+}
+
+function getRandomCoord(min, max) {
+    return Math.random() * (max - min) + min
+}
+
+function disconnect() {
+    if (!isDisconnect) {
+        return
+    } 
+    // isDisconnect = true
+    // console.log('element')
+    isConnecting = false
+    isConnected = false
+    currentElement.x = lerp(currentElement.x, randX1, 0.1)
+    currentElement.y = lerp(currentElement.y, randY1, 0.1)
+    otherElement.x = lerp(otherElement.x, randX2, 0.1)
+    otherElement.y = lerp(otherElement.y, randY2, 0.1)
+    // elements.forEach(element => {
+    //     let randX = getRandomCoord(50,750)
+    //     let randY = getRandomCoord(50,750)
+    //     element.x = lerp(element.x, randX, 0.05)
+    //     element.y = lerp(element.y, randY, 0.05)
+    //     console.log(randX, randY)
+    //     disconnectBtn.style.visibility = `hidden`;
+    // })
+    if (Math.abs(currentElement.x - randX1) < 1 && Math.abs(currentElement.y - randY1) < 1 &&
+        Math.abs(otherElement.x - randX2) < 1 && Math.abs(otherElement.y - randY2) < 1) {
+        isDisconnect = false;
+        isConnected = false  // Анимация завершена
+        disconnectBtn.style.visibility = `hidden`
+    }
+
+    // isDisconnect = false
+
 }
 
 function isIntersecting(element1, element2) {
@@ -259,7 +276,17 @@ orangeBtn.onclick = function () {
 }
 
 disconnectBtn.onclick = function () {
-    alert('Пока не готово')
+    if (!isConnected) {
+        return
+    }
+    // alert('Пока не готово')
+    isDisconnect = true
+    randX1 = getRandomCoord(100, canvas.width - 100)
+    randY1 = getRandomCoord(100, canvas.height - 100)
+    randX2 = getRandomCoord(100, canvas.width - 100)
+    randY2 = getRandomCoord(100, canvas.height - 100)
+    console.log(randX1, randY1)
+    console.log(randX2, randY2)
 }
 
 
