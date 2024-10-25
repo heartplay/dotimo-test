@@ -22,7 +22,7 @@ let targetCoords
 
 let elements = [
     createElement(200, 200, 50, 'rgb(120,24,196)', 'rgba(120,24,196,0.3)'),
-    createElement(400, 300, 70, 'rgb(42,176,163)', 'rgba(42,176,163,0.3)'),
+    createElement(400, 200, 70, 'rgb(42,176,163)', 'rgba(42,176,163,0.3)'),
     // createElement(200, 500, 60, 'rgb(231,142,76)', 'rgba(231,142,76,0.3)')
 ]
 
@@ -98,7 +98,7 @@ function updateElementsPosition() {
     let dx = newX - currentElement.x
     let dy = newY - currentElement.y
     if (currentElement.connectedElements.length > 0) {
-        disconnectBtn.style.visibility = `visible`
+        
         currentElement.connectedElements.forEach(element => {
             const minX = element.size / 2
             const maxX = canvas.width - element.size / 2
@@ -151,6 +151,7 @@ function connectElements() {
         if (isIntersecting(currentElement, element)) {
             currentElement.connectedElements.push(element)
             element.connectedElements.push(currentElement)
+            disconnectBtn.style.visibility = `visible`
             isConnecting = false
             return
         }
@@ -163,8 +164,8 @@ function disconnect() {
         if (element.connectedElements.length === 0) return true
 
         const target = targetCoords[index]
-        element.x = lerp(element.x, target.x, 0.1)
-        element.y = lerp(element.y, target.y, 0.1)
+        element.x = lerp(element.x, target.x, 0.05)
+        element.y = lerp(element.y, target.y, 0.05)
         return Math.abs(element.x - target.x) < 1 && Math.abs(element.y - target.y) < 1
     })
     if (allElementsAtTarget) {
