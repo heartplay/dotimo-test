@@ -10,20 +10,20 @@ canvas.width = 800
 canvas.height = 800
 ctx.lineWidth = 1
 
-let currentElement, otherElement
+let currentElement
 let offsetX, offsetY
-let newX, newY, newConX, newConY
+let newX, newY
 let dx, dy
-let isConnected = false
 let isConnecting = false
 let isDragging = false
 let fieldCords = getCoords(field)
 let isDisconnect = false
-let randX1, randY1, randX2, randY2
+let targetCoords
 
 let elements = [
     createElement(200, 200, 50, 'rgb(120,24,196)', 'rgba(120,24,196,0.3)'),
-    createElement(400, 200, 70, 'rgb(42,176,163)', 'rgba(42,176,163,0.3)')
+    createElement(400, 300, 70, 'rgb(42,176,163)', 'rgba(42,176,163,0.3)'),
+    // createElement(200, 500, 60, 'rgb(231,142,76)', 'rgba(231,142,76,0.3)')
 ]
 
 function createElement(x, y, size, borderColor, color) {
@@ -40,14 +40,7 @@ function createElement(x, y, size, borderColor, color) {
 canvas.addEventListener('mousedown', (event) => {
     let startX = event.clientX - fieldCords.x
     let startY = event.clientY - fieldCords.y
-
     currentElement = elements.find(element => isMouseOnElement(startX, startY, element))
-    elements.forEach(elem => {
-        if (elem == currentElement) {
-            return
-        }
-        otherElement = elem
-    })
     if (currentElement) {
         isDragging = true
         offsetX = startX - currentElement.x
@@ -60,12 +53,12 @@ canvas.addEventListener('mousedown', (event) => {
 })
 
 document.addEventListener('mousemove', (event) => {
+    if (isConnecting) {
+        return
+    }
     if (!isDragging) {
         return 
     }
-    // if (isConnecting == true) {
-    //     return
-    // }
     let mouseX = event.clientX - fieldCords.x
     let mouseY = event.clientY - fieldCords.y
     newX = mouseX - offsetX
@@ -86,114 +79,106 @@ function drawAll() {
     if (isDragging) {
         updateElementsPosition()
     }
-    if (currentElement && !isIntersecting(currentElement, otherElement) && !isDisconnect) {
+    if (currentElement) {
         connectElements()
     }
     if (isDisconnect) {
         disconnect()
-    }
+    } 
     drawElements()
     window.requestAnimationFrame(drawAll)
 }
 
 function updateElementsPosition() {
-    if (!currentElement) return;
-    newX = Math.max(currentElement.size / 2, Math.min(newX, canvas.width - currentElement.size / 2));
-    newY = Math.max(currentElement.size / 2, Math.min(newY, canvas.height - currentElement.size / 2));
-    if (isIntersecting(currentElement, otherElement)) {
-        isConnected = true;
-        disconnectBtn.style.visibility = `visible`;
-        dx = currentElement.x - otherElement.x;
-        dy = currentElement.y - otherElement.y;
-        newConX = newX - dx;
-        newConY = newY - dy;
-        newConX = Math.max(otherElement.size / 2, Math.min(newConX, canvas.width - otherElement.size / 2));
-        newConY = Math.max(otherElement.size / 2, Math.min(newConY, canvas.height - otherElement.size / 2));
-        if (newConX <= otherElement.size / 2 || newConX >= canvas.width - otherElement.size / 2) {
-            newX = currentElement.x
-        }
-        if (newConY <= otherElement.size / 2 || newConY >= canvas.height - otherElement.size / 2) {
-            newY = currentElement.y
-        }
-        currentElement.x = newX;
-        currentElement.y = newY;
-        otherElement.x = newX - dx;
-        otherElement.y = newY - dy;
+    if (!currentElement) {
+        return
+    }
+    newX = Math.max(currentElement.size / 2, Math.min(newX, canvas.width - currentElement.size / 2))
+    newY = Math.max(currentElement.size / 2, Math.min(newY, canvas.height - currentElement.size / 2))
+    let dx = newX - currentElement.x
+    let dy = newY - currentElement.y
+    if (currentElement.connectedElements.length > 0) {
+        disconnectBtn.style.visibility = `visible`
+        currentElement.connectedElements.forEach(element => {
+            const minX = element.size / 2
+            const maxX = canvas.width - element.size / 2
+            const minY = element.size / 2
+            const maxY = canvas.height - element.size / 2
+            const maxNewX = Math.max(minX, Math.min(element.x + dx, maxX))
+            const maxNewY = Math.max(minY, Math.min(element.y + dy, maxY))
+            dx = Math.min(dx, maxNewX - element.x)
+            dx = Math.max(dx, minX - element.x)
+            dy = Math.min(dy, maxNewY - element.y)
+            dy = Math.max(dy, minY - element.y)
+        })
+        currentElement.x += dx
+        currentElement.y += dy
+        currentElement.connectedElements.forEach(element => {
+            element.x += dx
+            element.y += dy
+        })
     } else {
-        currentElement.x = newX;
-        currentElement.y = newY;
+        currentElement.x = newX
+        currentElement.y = newY
     }
 }
 
 function connectElements() {
-    if (!currentElement || isConnected) {
+    if (!currentElement) {
         return
     }
-    if (isIntersecting(currentElement, otherElement)) {
-        isConnecting = false
-        return
-    }
-    let distance = getDistanceBetween(currentElement, otherElement)
-    let connectionDistance = currentElement.size + otherElement.size + ctx.lineWidth
-    let speed = Math.pow(connectionDistance / distance, 2)
-    if (distance <= connectionDistance && !isIntersecting(currentElement, otherElement)) {
-        isConnecting = true
-        let dx = currentElement.x - otherElement.x
-        let dy = currentElement.y - otherElement.y
-        if (Math.abs(dx) > Math.abs(dy)) {
-            otherElement.x += dx / distance * speed
-        } else if ((Math.abs(dy) > Math.abs(dx))) {
-            otherElement.y += dy / distance * speed
+    elements.forEach(element => {
+        if (currentElement == element) {
+            return
         }
-        // isConnecting = true
-    }
-
-}
-
-function getRandomCoord(min, max) {
-    return Math.random() * (max - min) + min
+        if (currentElement.connectedElements.find(elem => elem == element)) {
+            return
+        }
+        let distance = getDistanceBetween(currentElement, element)
+        let connectionDistance = currentElement.size * 2 + ctx.lineWidth
+        let speed = Math.pow(connectionDistance / distance, 2)
+        if (distance <= connectionDistance && !isIntersecting(currentElement, element)) {
+            isDragging = false
+            isConnecting = true
+            let dx = currentElement.x - element.x
+            let dy = currentElement.y - element.y
+            if (Math.abs(dx) > Math.abs(dy)) {
+                element.x += dx / distance * speed * 2
+            } else if ((Math.abs(dy) > Math.abs(dx))) {
+                element.y += dy / distance * speed * 2
+            }
+        }
+        if (isIntersecting(currentElement, element)) {
+            currentElement.connectedElements.push(element)
+            element.connectedElements.push(currentElement)
+            isConnecting = false
+            return
+        }
+    })
 }
 
 function disconnect() {
-    if (!isDisconnect) {
-        return
-    } 
-    // isDisconnect = true
-    // console.log('element')
-    isConnecting = false
-    isConnected = false
-    currentElement.x = lerp(currentElement.x, randX1, 0.1)
-    currentElement.y = lerp(currentElement.y, randY1, 0.1)
-    otherElement.x = lerp(otherElement.x, randX2, 0.1)
-    otherElement.y = lerp(otherElement.y, randY2, 0.1)
-    // elements.forEach(element => {
-    //     let randX = getRandomCoord(50,750)
-    //     let randY = getRandomCoord(50,750)
-    //     element.x = lerp(element.x, randX, 0.05)
-    //     element.y = lerp(element.y, randY, 0.05)
-    //     console.log(randX, randY)
-    //     disconnectBtn.style.visibility = `hidden`;
-    // })
-    if (Math.abs(currentElement.x - randX1) < 1 && Math.abs(currentElement.y - randY1) < 1 &&
-        Math.abs(otherElement.x - randX2) < 1 && Math.abs(otherElement.y - randY2) < 1) {
+    currentElement = null
+    const allElementsAtTarget = elements.every((element, index) => {
+        if (element.connectedElements.length === 0) return true
+
+        const target = targetCoords[index]
+        element.x = lerp(element.x, target.x, 0.1)
+        element.y = lerp(element.y, target.y, 0.1)
+        return Math.abs(element.x - target.x) < 1 && Math.abs(element.y - target.y) < 1
+    })
+    if (allElementsAtTarget) {
         isDisconnect = false
-        isConnected = false
-        disconnectBtn.style.visibility = `hidden`
+        disconnectBtn.style.visibility = 'hidden'
+        elements.forEach(element => element.connectedElements = [])
+    } else {
+        window.requestAnimationFrame(disconnect)
     }
-
-    // isDisconnect = false
-
 }
 
-function isIntersecting(element1, element2) {
-    return !(element1.x + ctx.lineWidth + element1.size / 2 < element2.x - ctx.lineWidth - element2.size / 2 || 
-             element1.x - ctx.lineWidth - element1.size / 2 > element2.x + ctx.lineWidth + element2.size / 2 || 
-             element1.y + ctx.lineWidth + element1.size / 2 < element2.y - ctx.lineWidth - element2.size / 2 || 
-             element1.y - ctx.lineWidth - element1.size / 2 > element2.y + ctx.lineWidth + element2.size / 2 )
-}
-
-function lerp(start, end, t) {
-    return start * (1 - t) + end * t;
+disconnectBtn.onclick = function () {
+    isDisconnect = true
+    targetCoords = randomCoords(elements, canvas.width, canvas.height)
 }
 
 function drawElements() {
@@ -201,7 +186,8 @@ function drawElements() {
         ctx.beginPath()
         ctx.strokeStyle = element.borderColor
         ctx.fillStyle = element.color
-        if (isConnected && currentElement) {
+        
+        if (currentElement && currentElement.connectedElements.find(elem => elem == element)) {
             ctx.setLineDash([15, 5])
         } else if (element == currentElement) {
             ctx.setLineDash([15, 5])
@@ -220,12 +206,45 @@ function clear() {
     ctx.clearRect(0, 0, canvas.width, canvas.height)
 }
 
+function getRandomCoord(min, max) {
+    return Math.random() * (max - min) + min
+}
+
+function isIntersecting(element1, element2) {
+    return !(element1.x + ctx.lineWidth + element1.size / 2 < element2.x - ctx.lineWidth - element2.size / 2 || 
+             element1.x - ctx.lineWidth - element1.size / 2 > element2.x + ctx.lineWidth + element2.size / 2 || 
+             element1.y + ctx.lineWidth + element1.size / 2 < element2.y - ctx.lineWidth - element2.size / 2 || 
+             element1.y - ctx.lineWidth - element1.size / 2 > element2.y + ctx.lineWidth + element2.size / 2 )
+}
+
+function lerp(start, end, t) {
+    return start * (1 - t) + end * t
+}
+
 function isMouseOnElement(x, y, element) {
     if (x > element.x - element.size / 2 && x < element.x + element.size / 2 && y > element.y - element.size / 2 && y < element.y + element.size / 2) {
         return true
     } else {
         return false
     }
+}
+
+function randomCoords() {
+    const newCoords = []
+    elements.forEach(element => {
+        if (element.connectedElements.length > 0) {
+            let randX, randY, isTooClose
+            do {
+                randX = getRandomCoord(element.size, canvas.width - element.size)
+                randY = getRandomCoord(element.size, canvas.height - element.size)
+                isTooClose = newCoords.some(coord => getDistanceBetweenCoords(coord.x, coord.y, randX, randY) < element.size * 2 + 20)
+            } while (isTooClose)
+            newCoords.push({x: randX, y: randY})
+        } else {
+            newCoords.push({x: element.x, y: element.y})
+        }
+    })
+    return newCoords
 }
 
 function getCoords(element) {
@@ -238,6 +257,10 @@ function getCoords(element) {
     }
 }
 
+function getDistanceBetweenCoords(x1, y1, x2, y2) {
+    return Math.hypot(x2 - x1, y2 - y1)
+}
+
 function getDistanceBetween(element1, element2) {
     return Math.hypot(element1.x - element2.x, element1.y - element2.y)
 }
@@ -248,8 +271,10 @@ function changeColor(borderColor, color) {
         return
     }
     elements.forEach(element => {
-        if (isConnected) {
-            elements.forEach(elem => {
+        if (element.connectedElements.length > 0) {
+            element.connectedElements.forEach(elem => {
+                element.borderColor = borderColor
+                element.color = color
                 elem.borderColor = borderColor
                 elem.color = color
             })
@@ -274,22 +299,3 @@ greenBtn.onclick = function () {
 orangeBtn.onclick = function () {
     changeColor(`rgb(231,142,76)`, 'rgba(231,142,76,0.3)')
 }
-
-disconnectBtn.onclick = function () {
-    if (!isConnected) {
-        return
-    }
-    // alert('Пока не готово')
-    isDisconnect = true
-    randX1 = getRandomCoord(100, canvas.width - 100)
-    randY1 = getRandomCoord(100, canvas.height - 100)
-    randX2 = getRandomCoord(100, canvas.width - 100)
-    randY2 = getRandomCoord(100, canvas.height - 100)
-    console.log(randX1, randY1)
-    console.log(randX2, randY2)
-}
-
-
-
-
-
