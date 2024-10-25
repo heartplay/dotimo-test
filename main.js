@@ -11,7 +11,7 @@ canvas.height = 800
 ctx.lineWidth = 1
 
 let currentElement
-let offsetX, offsetY
+let offsetX, offsetY, globalOffsetX, globalOffsetY
 let newX, newY
 let dx, dy
 let isConnecting = false
@@ -20,11 +20,30 @@ let fieldCords = getCoords(field)
 let isDisconnect = false
 let targetCoords
 
+
+
 let elements = [
     createElement(200, 200, 50, 'rgb(120,24,196)', 'rgba(120,24,196,0.3)'),
     createElement(400, 200, 70, 'rgb(42,176,163)', 'rgba(42,176,163,0.3)'),
     // createElement(200, 500, 60, 'rgb(231,142,76)', 'rgba(231,142,76,0.3)')
 ]
+
+let getOffset = function() {
+    let canvasOffset = canvas.getBoundingClientRect()
+    globalOffsetX = canvasOffset.left
+    globalOffsetY = canvasOffset.top
+}
+
+getOffset()
+window.onscroll = function() {
+    getOffset()
+}
+window.onresize = function() {
+    getOffset()
+}
+canvas.onresize = function() {
+    getOffset()
+}
 
 function createElement(x, y, size, borderColor, color) {
     return {
@@ -38,8 +57,10 @@ function createElement(x, y, size, borderColor, color) {
 }
 
 canvas.addEventListener('mousedown', (event) => {
-    let startX = event.clientX - fieldCords.x
-    let startY = event.clientY - fieldCords.y
+    // let startX = event.clientX - fieldCords.x
+    // let startY = event.clientY - fieldCords.y
+    let startX = event.clientX - globalOffsetX
+    let startY = event.clientY - globalOffsetY
     currentElement = elements.find(element => isMouseOnElement(startX, startY, element))
     if (currentElement) {
         isDragging = true
@@ -59,8 +80,8 @@ document.addEventListener('mousemove', (event) => {
     if (!isDragging) {
         return 
     }
-    let mouseX = event.clientX - fieldCords.x
-    let mouseY = event.clientY - fieldCords.y
+    let mouseX = event.clientX - globalOffsetX
+    let mouseY = event.clientY - globalOffsetY
     newX = mouseX - offsetX
     newY = mouseY - offsetY
 })
